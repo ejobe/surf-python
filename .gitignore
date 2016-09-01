@@ -3,3 +3,4 @@
 *.so
 *.temp
 cpci/build/*
+cpci/lib/*
