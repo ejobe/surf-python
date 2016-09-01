@@ -2,9 +2,9 @@
 import numpy as np
 import time
 import sys
-import os.path
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+#import os.path
+#sys.path.append(
+#    os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
 
 import surf
 import surf_data

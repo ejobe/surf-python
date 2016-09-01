@@ -15,16 +15,15 @@ import struct
 import sys
 import time
 import numpy as np
+import ocpci
 
 from utils.bf import * 
 from utils.surf_constants import * 
 
-import cpci.ocpci as ocpci
 import serial.surf_i2c as surf_i2c
 import serial.spi as spi
 import pb.picoblaze as picoblaze
 import calibrations.surf_calibrations as surf_calibrations
-  
 
 class LAB4Controller:
         map = { 'CONTROL'		    : 0x00000,
