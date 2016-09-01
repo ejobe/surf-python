@@ -11,9 +11,14 @@ import json
 from utils.surf_constants import *
 
 cal = {}
-with open(calibration_filename,"r") as infile:
-    cal = json.load(infile)
 
+try:
+    with open(calibration_filename,"r") as infile:
+        cal = json.load(infile)
+
+except IOError:
+    print 'calibration file does not exist'
+ 
 def save_vadjp(dna, vadjp):
     for key in cal:
         if cal[key]['DNA'] == dna:
@@ -102,3 +107,7 @@ def add_board(serial, dna):
     cal[serial] = dna
     with open(calibration_filename,"w") as outfile:
         json.dump(cal, outfile)
+
+    
+
+
