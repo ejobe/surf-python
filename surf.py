@@ -407,21 +407,21 @@ class LAB4Controller:
                         self.l4reg(lab4, i+256, lab4d_default['dt_trim'])
 
                 #timing register default values
-                self.l4reg(lab4, 384, 95)      #PCLK-1=384 : wr_strb_le 
-                self.l4reg(lab4, 385, 0)       #PCLK-1=385 : wr_strb_fe 
-                self.l4reg(lab4, 386, 104)     #PCLK-1=386 : sstoutfb --optimized for lab0 on canoes, might need to be LAB4D-specific
-                self.l4reg(lab4, 387, 0)       #PCLK-1=387 : wr_addr_sync 
-                self.l4reg(lab4, 388, 55)      #PCLK-1=388 : tmk_s1_le  --was 38
-                self.l4reg(lab4, 389, 86)      #PCLK-1=389 : tmk_s1_fe 
-                self.l4reg(lab4, 390, 7)       #PCLK-1=390 : tmk_s2_le  --was 110
-                self.l4reg(lab4, 391, 32)      #PCLK-1=391 : tmk_s2_fe  --was 20
-                self.l4reg(lab4, 392, 35)      #PCLK-1=392 : phase_le -- was 45 6/8
-                self.l4reg(lab4, 393, 75)      #PCLK-1=393 : phase_fe -- was 85 6/8
-                self.l4reg(lab4, 394, 100)     #PCLK-1=394 : sspin_le --maybe push up to 104 to squeek out extra ABW (was at 92)
-                self.l4reg(lab4, 395, 6)       #PCLK-1=395 : sspin_fe
+                self.l4reg(lab4, 384, lab4d_default['wr_strb_le']) #PCLK-1=384 : wr_strb_le 
+                self.l4reg(lab4, 385, lab4d_default['wr_strb_fe']) #PCLK-1=385 : wr_strb_fe 
+                self.l4reg(lab4, 386, lab4d_default['sstoutfb'])   #PCLK-1=386 : sstoutfb --optimized for lab0 on canoes, might need to be LAB4D-specific
+                self.l4reg(lab4, 387, lab4d_default['wr_addr_sync']) #PCLK-1=387 : wr_addr_sync 
+                self.l4reg(lab4, 388, lab4d_default['tmk_s1_le'])  #PCLK-1=388 : tmk_s1_le  --was 38
+                self.l4reg(lab4, 389, lab4d_default['tmk_s1_fe'])  #PCLK-1=389 : tmk_s1_fe 
+                self.l4reg(lab4, 390, lab4d_default['tmk_s2_le'])  #PCLK-1=390 : tmk_s2_le  --was 110
+                self.l4reg(lab4, 391, lab4d_default['tmk_s2_fe'])  #PCLK-1=391 : tmk_s2_fe  --was 20
+                self.l4reg(lab4, 392, lab4d_default['phase_le'])   #PCLK-1=392 : phase_le -- was 45 6/8
+                self.l4reg(lab4, 393, lab4d_default['phase_fe'])   #PCLK-1=393 : phase_fe -- was 85 6/8
+                self.l4reg(lab4, 394, lab4d_default['sspin_le'])   #PCLK-1=394 : sspin_le --maybe push up to 104 to squeek out extra ABW (was at 92)
+                self.l4reg(lab4, 395, lab4d_default['sspin_fe'])   #PCLK-1=395 : sspin_fe
 
                 #default test pattern
-                self.l4reg(lab4, 13, 0xBA6)    #PCLK-1=13  : LoadTPG
+                self.l4reg(lab4, 13, lab4d_default['testpattern']) #PCLK-1=13  : LoadTPG
                 
 class Surf(ocpci.Device):
     internalClock = 0

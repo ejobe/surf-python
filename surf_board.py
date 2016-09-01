@@ -1,7 +1,7 @@
 import surf
 import sys
 
-sys.path.insert(0, '/home/anita/astroparticlelab/')
+#sys.path.insert(0, '/home/anita/astroparticlelab/')
 
 def do():
     dev=surf.Surf()
@@ -17,6 +17,7 @@ def do():
     dev.set_phase(2)
     dev.labc.automatch_phab(15)
 
+    dev.labc.dll(15, mode=True)
     dev.status()
 
     return dev

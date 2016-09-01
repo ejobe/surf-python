@@ -47,3 +47,21 @@ lab4d_default['dt_trim'] = 1600
 lab4d_default['vtrim_fb']= 1350 
 lab4d_default['vadjp']   = 2700
 lab4d_default['vadjn']   = 1671
+
+lab4d_default['testpattern'] = 0xBA6
+
+###timing registers:
+lab4d_default['wr_strb_le']  = 95
+lab4d_default['wr_strb_fe']  = 0
+lab4d_default['sstoutfb']    = 104
+lab4d_default['wr_addr_sync']= 0
+lab4d_default['tmk_s1_le']   = 55
+lab4d_default['tmk_s1_fe']   = 86
+lab4d_default['tmk_s2_le']   = 7
+lab4d_default['tmk_s2_fe']   = 32
+lab4d_default['phase_le']    = 35
+lab4d_default['phase_fe']    = 75
+lab4d_default['sspin_le']    = 100
+lab4d_default['sspin_fe']    = 6
+
+
