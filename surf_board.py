@@ -1,10 +1,12 @@
+
 import surf
 import sys
 import calibrations.surf_calibrations as surf_cal
 
 #sys.path.insert(0, '/home/anita/astroparticlelab/')
 
-def do():
+def do(board):
+
     dev=surf.Surf()
     print 'identify:'
     dev.identify()
@@ -20,7 +22,14 @@ def do():
     dev.set_phase(2)
     dev.labc.automatch_phab(15)
 
+    if not surf_cal.check_board(board, dev.dna()):
+        print 'adding board to calibration json file..'
+        surf_cal.add_board(board, dev.dna())
+    else:
+        print 'cal file entry already exists for board: ', board
+
     if surf_cal.read_vadjn(dev.dna()) == None:
+        print 'scanning for Vadjn..'
         vadjn = []
         for i in range(12):
             vadjn.append(dev.labc.autotune_vadjn(i))
@@ -28,6 +37,7 @@ def do():
         surf_cal.save_vadjn(dev.dna(), vadjn)
     
     if surf_cal.read_vadjp(dev.dna()) == None:
+        print 'scanning for Vadjp..'
         vadjp = []
         for i in range(12):
             vadjp.append(dev.labc.autotune_vadjp(i))
@@ -43,4 +53,7 @@ def do():
     return dev
 
 if __name__ == '__main__':
-    do()
+    
+    board = 'CANOES'
+    
+    do(board)

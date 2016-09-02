@@ -101,7 +101,7 @@ class SurfData:
     
     ################################################################
     #take a pedestal run
-    def pedestalRun(self, numruns=120, filename='peds.temp', save=True, update_cal_file=True):
+    def pedestalRun(self, numruns=160, filename='peds.temp', save=True, update_cal_file=True):
 
         self.start()
 
@@ -162,6 +162,7 @@ class SurfData:
         scan_ped =np.array(scan_ped)
 
         if save:
+            filename=calibration_dir + filename
             with open(filename, 'w') as filew:
                 for j in range(0, len(scan_val)):
                     filew.write(str(scan_val[j]))
@@ -309,5 +310,76 @@ class SurfData:
 
         return all_sums, all_subs
 
+
+if __name__ == '__main__':
+
+    run_options = {'log'      : 'log data to file [num_events, filename]',
+                   'pedestal' : 'take pedestal data',
+                   'scope'    : 'plot some data in real-time like a scope',
+                   'lin'      : 'do a DC pedestal scan',
+                   }
+
+    import matplotlib.pyplot as plt
+    import sys
+
+    plt.ion()
+    
+    dev=SurfData()
+
+    if len(sys.argv) < 2:
+        print 'doing nothing'
+        print 'here are your options:'
+        print
+        for key in run_options:
+            print '  argument:', key, '   ::', run_options[key]
+    
+    elif sys.argv[1] == 'log':
+        if len(sys.argv) == 4:
+            num_events = int(sys.argv[2])
+            filename = sys.argv[3]
+
+            dev.log(num_events, filename=filename)
+
+    elif sys.argv[1] == 'pedestal':
+        dev.pedestalRun()
+    
+    elif sys.argv[1] == 'lin':
+        if len(sys.argv) == 5:
+            #2 = DAC start
+            #3 = DAC stop
+            #4 = DAC interval
+            dev.pedestalScan(int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]))
+        
+        else:
+            dev.pedestalScan()
+    
+    elif sys.argv[1] == 'scope':
+        
+        refresh = 0.1
+        
+        if len(sys.argv) == 3:
+            lab = [int(sys.argv[2])]
+
+        elif len(sys.argv) == 4:
+            lab = range(int(sys.argv[2]),int(sys.argv[3]),1)
+
+        else:
+            lab = range(12)
+        
+        fig=plt.figure(1)
+
+        while(1):
+            plt.clf()
+
+            d=dev.log(1, save=False)
+
+            for i in lab:
+                plt.plot(d[0][i], 'o--', ms=2, label='LAB{}'.format(i))
+
+            #plt.legend()
+            plt.pause(refresh)
+
+    else:
+        print 'doing nothing'
                  
 

@@ -103,10 +103,28 @@ def read_pedestals(dna):
                 return None
     return None
 
+#############################################################
+#add board by specifying board name ('serial') and dna
 def add_board(serial, dna):
-    cal[serial] = dna
+    cal[serial] = {}
+    cal[serial]['DNA'] = dna
     with open(calibration_filename,"w") as outfile:
         json.dump(cal, outfile)
+
+#############################################################
+#check if board exists in cal file by specifying board name ('serial') and dna
+def check_board(serial, dna):
+    for key in cal:
+        if key == serial:
+            if cal[key]['DNA'] == dna:
+                return True
+            else:
+                print 'board exists, but does not match device DNA'
+                print 'trying re adding board to cal file'
+                return None
+    return False
+
+
 
     
 
