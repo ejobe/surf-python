@@ -356,7 +356,8 @@ if __name__ == '__main__':
     elif sys.argv[1] == 'scope':
         
         refresh = 0.1
-        
+        fig=plt.figure()
+
         if len(sys.argv) == 3:
             lab = [int(sys.argv[2])]
 
@@ -366,8 +367,6 @@ if __name__ == '__main__':
         else:
             lab = range(12)
         
-        fig=plt.figure(1)
-
         while(1):
             plt.clf()
 
