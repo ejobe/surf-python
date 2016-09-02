@@ -13,7 +13,8 @@ def do(board):
     print 'path:', dev.path
     dev.labc.run_mode(0)
     dev.labc.reset_fifo()
-    dev.labc.reset_ramp()    
+    dev.labc.reset_ramp()
+    dev.labc.dll(15)
     
     dev.i2c.default_config()
     dev.clock(dev.internalClock)
@@ -28,6 +29,7 @@ def do(board):
     else:
         print 'cal file entry already exists for board: ', board
 
+    '''
     if surf_cal.read_vadjn(dev.dna()) == None:
         print 'scanning for Vadjn..'
         vadjn = []
@@ -36,6 +38,8 @@ def do(board):
 
         surf_cal.save_vadjn(dev.dna(), vadjn)
     
+    dev.labc.default()
+
     if surf_cal.read_vadjp(dev.dna()) == None:
         print 'scanning for Vadjp..'
         vadjp = []
@@ -46,14 +50,23 @@ def do(board):
     
     #re-initialize the lab4d register loading
     dev.labc.default()
- 
+    '''
+
     dev.labc.dll(15, mode=True)
     dev.status()
 
     return dev
 
 if __name__ == '__main__':
-    
+            
     board = 'CANOES'
-    
+
+    if len(sys.argv) > 1:
+        board = sys.argv[1]
+        
+    print '************************'
+    print 'boarding SURFv5:', board
+    print '************************'
+
     do(board)
+

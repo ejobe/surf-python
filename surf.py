@@ -128,7 +128,7 @@ class LAB4Controller:
                         rising=self.scan_edge(lab, 1, 0)
                         falling=self.scan_edge(lab, 0, rising+100)
                         trial=falling-rising
-                        print "Trial: vadjp %d width %f target %f" % ( vadjp, trial, width)
+                        print "LAB4D# %d Trial: vadjp %d width %f target %f" % ( lab, vadjp, trial, width)
                 return vadjp
                 
         def autotune_vadjn(self, lab):
@@ -138,7 +138,7 @@ class LAB4Controller:
             self.l4reg(lab, 3, vadjn)            
             width = self.scan_width(lab, 64)
             oldwidth = width
-            print "Trial: vadjn %d width %f" % ( vadjn, width)
+            print "LAB4D# %d Trial: vadjn %d width %f" % ( lab, vadjn, width)
             while abs(width-840) > 0.5:
                 if (width < 840):
                     if (oldwidth > 840):
@@ -155,7 +155,7 @@ class LAB4Controller:
                 oldwidth = width
                 self.l4reg(lab, 3, vadjn)
                 width = self.scan_width(lab, 64)
-                print "Trial: vadjn %d width %f" % ( vadjn, width)
+                print "LAB4D# %d Trial: vadjn %d width %f" % ( lab, vadjn, width)
             return vadjn            
                 
         def scan_free(self):
@@ -494,7 +494,6 @@ class Surf(ocpci.Device):
         else:
             print "Invalid argument! Your options are all off, all on, release, one off, one on" 
 	
-
     def list_to_string(self,list):
         return "".join(map(str,list))
 				
@@ -650,25 +649,25 @@ class Surf(ocpci.Device):
 
         return board_data
 
-    def scope_lab(self, lab, samples=1024, force_trig=True, frames=1, refresh=0.1):
-        import matplotlib.pyplot as plt
-        plt.ion()
-    
-        x=np.arange(samples)
-        for i in range(0, frames):
-                fig=plt.figure(1)
-                plt.clf()
-                plot_data = self.log_lab(lab=lab, samples=samples, force_trig=True)
-                #plot_data = np.sin(x+np.random.uniform(0,np.pi))+np.random.normal(0, .1)
-                for chan in range(0, len(plot_data)):
-                        plt.plot(x, np.bitwise_and(plot_data[chan], 0x0FFF), '--', label='LAB{}'.format(chan))
-                #plt.legend(numpoints=1, ncol=6, prop={'size':8})
-                if i == (frames-1):
-                        raw_input('press enter to close')
-                        plt.close(fig)
-                        plt.ioff()
-                else:
-                        plt.pause(refresh)
+    #def scope_lab(self, lab, samples=1024, force_trig=True, frames=1, refresh=0.1):
+    #    import matplotlib.pyplot as plt
+    #    plt.ion()
+    #
+    #    x=np.arange(samples)
+    #    for i in range(0, frames):
+    #            fig=plt.figure(1)
+    #            plt.clf()
+    #            plot_data = self.log_lab(lab=lab, samples=samples, force_trig=True)
+    #            #plot_data = np.sin(x+np.random.uniform(0,np.pi))+np.random.normal(0, .1)
+    #            for chan in range(0, len(plot_data)):
+    #                    plt.plot(x, np.bitwise_and(plot_data[chan], 0x0FFF), '--', label='LAB{}'.format(chan))
+    #            #plt.legend(numpoints=1, ncol=6, prop={'size':8})
+    #            if i == (frames-1):
+    #                    raw_input('press enter to close')
+    #                    plt.close(fig)
+    #                    plt.ioff()
+    #            else:
+    #                    plt.pause(refresh)
                                          
     def identify(self):
         ident = bf(self.read(self.map['IDENT']))
