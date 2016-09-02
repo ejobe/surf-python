@@ -28,7 +28,7 @@ class SurfData:
 
     ################################################################   
     # set some configurations for data taking
-    def start(self, startup_wait=0.2):
+    def start(self, startup_wait=0.05):
         self.pedestals=np.zeros((EVENT_BUFFER*4, 12), dtype=np.int)
         self.lab_lut = np.zeros((2**LAB_ADC_BITS, 12), dtype=float)
         self.dev.labc.run_mode(0)
