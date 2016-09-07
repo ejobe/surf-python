@@ -29,25 +29,25 @@ def do(board):
     else:
         print 'cal file entry already exists for board: ', board
 
-    '''
-    if surf_cal.read_vadjn(dev.dna()) == None:
-        print 'scanning for Vadjn..'
-        vadjn = []
-        for i in range(12):
-            vadjn.append(dev.labc.autotune_vadjn(i))
-
-        surf_cal.save_vadjn(dev.dna(), vadjn)
-    
-    dev.labc.default()
-
-    if surf_cal.read_vadjp(dev.dna()) == None:
-        print 'scanning for Vadjp..'
-        vadjp = []
-        for i in range(12):
-            vadjp.append(dev.labc.autotune_vadjp(i))
-
-        surf_cal.save_vadjp(dev.dna(), vadjp)  
-    
+#    
+#    if surf_cal.read_vadjn(dev.dna()) == None:
+#        print 'scanning for Vadjn..'
+#        vadjn = []
+#        for i in range(12):
+#            vadjn.append(dev.labc.autotune_vadjn(i))
+#
+#        surf_cal.save_vadjn(dev.dna(), vadjn)
+#    
+#    dev.labc.default()
+#
+#    if surf_cal.read_vadjp(dev.dna()) == None:
+#        print 'scanning for Vadjp..'
+#        vadjp = []
+#        for i in range(12):
+#            vadjp.append(dev.labc.autotune_vadjp(i))
+#
+#        surf_cal.save_vadjp(dev.dna(), vadjp)  
+#    
     #re-initialize the lab4d register loading
     dev.labc.default()
     '''

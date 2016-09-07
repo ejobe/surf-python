@@ -59,15 +59,18 @@ class SurfData:
         for i in range(numevent):
             _data = self.dev.log_lab(lab, samples=EVENT_BUFFER, force_trig=force_trig)
 
+            end_of_buf_flag=-1
             for k in range(surf_channels):
-                end_of_buf_flag=-1
-                datbuf = (_data[k][0] & lab4d_buffer_mask) >> 14 #check the LAB4D buffer only on the 0th sample 
-                                                                 #(should be the same for all samples...if it's working correctly)
-                for j in range(EVENT_BUFFER):
-                    #datbuf = (_data[k][j] & lab4d_buffer_mask) >> 14
-                    while(((_data[k][j] & lab4d_window_mask) >> 13) and (end_of_buf_flag < 0)):
-                        end_of_buf_flag=j
-                        break
+                #end_of_buf_flag=-1  ##should be the same for all channels
+                datbuf = (_data[k][0] & lab4d_buffer_mask) >> 14 ##check the LAB4D buffer only on the 0th sample 
+                                                                 ##(should be the same for all samples...if it's working correctly)
+                
+                if k == 0: ##wraparound flag should be the same for all channels, so only check on LAB 0 to save time
+                    for j in range(EVENT_BUFFER):
+                        #datbuf = (_data[k][j] & lab4d_buffer_mask) >> 14
+                        while(((_data[k][j] & lab4d_window_mask) >> 13) and (end_of_buf_flag < 0)):
+                            end_of_buf_flag=j
+                            break
 
                 _data[k] = np.subtract(np.bitwise_and(_data[k][:], lab4d_data_mask), self.pedestals[datbuf*EVENT_BUFFER:(datbuf+1)*EVENT_BUFFER, k])
 
@@ -101,7 +104,7 @@ class SurfData:
     
     ################################################################
     #take a pedestal run
-    def pedestalRun(self, numruns=160, filename='peds.temp', save=True, update_cal_file=True):
+    def pedestalRun(self, numruns=164, filename='peds.temp', save=True, update_cal_file=True):
 
         self.start()
 
@@ -112,7 +115,8 @@ class SurfData:
         data = self.log(numruns, save=False, subtract_ped=False, unwrap=False)
         ped_data=np.zeros((lab4d_storage_cells, surf_channels), dtype=np.int)
         
-        for i in range(0, len(data)):
+        #skip first 4 events
+        for i in range(4, len(data)):
             for j in range(0, EVENT_BUFFER):
                 for k in range(0, len(data[0])):
                     ped_data[j+(i%4)*EVENT_BUFFER,k] += (data[i][k][j] & lab4d_data_mask)
@@ -313,12 +317,11 @@ class SurfData:
 
 if __name__ == '__main__':
 
-    run_options = {'log'      : 'log data to file [num_events, filename]',
-                   'pedestal' : 'take pedestal data',
-                   'scope'    : 'plot some data in real-time like a scope',
-                   'lin'      : 'do a DC pedestal scan',
+    run_options = {0 : ['log',      'log data to file [num_events, filename]'],
+                   1 : ['pedestal', 'take pedestal data'],
+                   2 : ['scope',    'plot some data in real-time like a scope'],
+                   3 : ['lin',      'do a DC pedestal scan'],
                    }
-
     import matplotlib.pyplot as plt
     import sys
 
@@ -327,23 +330,26 @@ if __name__ == '__main__':
     dev=SurfData()
 
     if len(sys.argv) < 2:
-        print 'doing nothing'
+
+	print 'doing nothing'
         print 'here are your options:'
-        print
+        print '------------------'
+        print 'key', ' :: ', '[ command,  function description]'
+        print '------------------'
         for key in run_options:
-            print '  argument:', key, '   ::', run_options[key]
+            print key, '   :: ', run_options[key]
     
-    elif sys.argv[1] == 'log':
+    elif sys.argv[1] == run_options[0][0]:
         if len(sys.argv) == 4:
             num_events = int(sys.argv[2])
             filename = sys.argv[3]
 
             dev.log(num_events, filename=filename)
 
-    elif sys.argv[1] == 'pedestal':
+    elif sys.argv[1] == run_options[1][0]:
         dev.pedestalRun()
     
-    elif sys.argv[1] == 'lin':
+    elif sys.argv[1] == run_options[3][0]:
         if len(sys.argv) == 5:
             #2 = DAC start
             #3 = DAC stop
@@ -353,7 +359,7 @@ if __name__ == '__main__':
         else:
             dev.pedestalScan()
     
-    elif sys.argv[1] == 'scope':
+    elif sys.argv[1] == run_options[2][0]:
         
         refresh = 0.1
         fig=plt.figure()

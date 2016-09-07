@@ -91,6 +91,11 @@ class LAB4Controller:
                     self.clr_phase(i)
                     phab = self.scan_value(i, wr_edge) & 0x01
 
+        #############################################################
+	#scan to find vadjp
+	# NOTE: current version is *NOT* usable with updated timing parameters
+	# (probably need to adjust target value)
+	'''
         def autotune_vadjp(self, lab, initial=2700):
                 self.set_tmon(lab, self.tmon['SSPin'])
                 rising=self.scan_edge(lab, 1, 0)
@@ -130,7 +135,12 @@ class LAB4Controller:
                         trial=falling-rising
                         print "LAB4D# %d Trial: vadjp %d width %f target %f" % ( lab, vadjp, trial, width)
                 return vadjp
-                
+	'''
+        #############################################################
+	#scan to find vadjn
+	# NOTE: current version is *NOT* usable with updated timing parameters
+	# (probably need to adjust target value) 
+	'''
         def autotune_vadjn(self, lab):
             self.set_tmon(lab, self.tmon['A1'])
             vadjn = 1640
@@ -157,7 +167,8 @@ class LAB4Controller:
                 width = self.scan_width(lab, 64)
                 print "LAB4D# %d Trial: vadjn %d width %f" % ( lab, vadjn, width)
             return vadjn            
-                
+        '''
+ 
         def scan_free(self):
             self.write(self.map['PHASECMD'], 0x01)
             
@@ -195,7 +206,7 @@ class LAB4Controller:
             self.write(self.map['PHASECMD'], 0x04)
             ret=self.read(self.map['PHASECMD'])
             while ret != 0x00:
-                ret = self.read(self.map['PHASECMD'])
+		    ret = self.read(self.map['PHASECMD'])
             return self.read(self.map['PHASERES'])
         
         def set_amon(self, lab, value):
@@ -351,7 +362,7 @@ class LAB4Controller:
                         user = bf(self.read(self.map['L4REG']))
 
         def default(self, lab4=15):
-                '''DAC default values'''
+                #DAC default values
                 self.l4reg(lab4, lab4d_register['vboot'], lab4d_default['vboot'])   #PCLK-1=0 : Vboot 
                 self.l4reg(lab4, 1, lab4d_default['vbsx'])      #PCLK-1=1 : Vbsx
                 self.l4reg(lab4, 2, lab4d_default['van_n'])     #PCLK-1=2 : VanN
@@ -421,7 +432,8 @@ class LAB4Controller:
 
                 #default test pattern
                 self.l4reg(lab4, 13, lab4d_default['testpattern']) #PCLK-1=13  : LoadTPG
-                
+
+
 class Surf(ocpci.Device):
     internalClock = 0
     externalClock = 1
@@ -597,8 +609,11 @@ class Surf(ocpci.Device):
     
     def set_vped(self, value=0x9C4):
         self.i2c.set_vped(value)
-        self.vped=value  #update vped value
-            
+        #self.vped=value  #update vped value
+        self.vped = self.i2c.read_dac(verbose=False)
+	if self.vped != value:
+		print 'something went wrong here'
+
     def read_fifo(self, lab, address=0): 		
         val = bf(self.read(self.map['LAB4_ROM_BASE']+(lab<<11)+address))
         sample0  = val[15:0]
@@ -631,8 +646,8 @@ class Surf(ocpci.Device):
         for chan in labs:
                 labdata=np.zeros(samples, dtype=np.int)
                 for i in range(0, int(samples), 2):
-                        tries=0
-			
+                        #tries=0
+			#
 			###redo this data check more efficiently (right now checking if data is available every 2 samples read)
                         #while(self.labc.check_fifo(1) & (1<<chan) ):
                         #        if tries > max_tries:
@@ -685,3 +700,35 @@ class Surf(ocpci.Device):
         return dnaval
 
         
+
+
+if __name__ == '__main__':
+
+	run_options = {
+		0 : ['set_ped', 'set pedestal level (12 bit decimal value)'],
+		}
+	
+	import sys
+
+	dev=Surf()
+
+	if len(sys.argv) < 2:
+		print 'doing nothing'
+		print 'here are your options:'
+		print '------------------'
+		print 'key', ' :: ', '[ command,  function description]'
+		print '------------------'
+		for key in run_options:
+			print key, '   :: ', run_options[key]
+
+	elif sys.argv[1] == run_options[0][0]:
+		if len(sys.argv) == 2:
+			print 'current pedestal level:', dev.vped
+		else:
+			print 'old pedestal level:', dev.vped
+			
+			dev.set_vped(int(sys.argv[2]))
+			print 'new pedestal level:', dev.vped
+
+	else:
+		print 'doing nothing'
