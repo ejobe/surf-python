@@ -4,6 +4,9 @@ module to calculate zero-crossings and period from sine-wave data
 author: Eric Oberla
 ejo@uchicago.edu
 '''
+import sys
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 
@@ -33,6 +36,7 @@ def zeroCrossings(data, lab, return_cell_profile=False):
         lab=[lab]
 
     for l in lab:
+
         zero_cross = np.zeros(prim_cells, dtype=float)
         period_cells[l] = []
         
@@ -55,7 +59,7 @@ def zeroCrossings(data, lab, return_cell_profile=False):
         for c in range(prim_cells):
             cell_profile_mean[c] = sum(cell_profile[c]) / float(len(cell_profile[c]))
             
-        '''this returns the cell profile data for all cells in a SINGLE channel'''
+        ##this returns the cell profile data for all cells in a SINGLE channel
         if return_cell_profile:
             return cell_profile
         
@@ -73,21 +77,21 @@ def zeroCrossings(data, lab, return_cell_profile=False):
             for buf in range(0, 8):
                 num_entries = num_entries + 1
 
-                '''loop over all cells, exluding DLL wraparound (cell 127->0)'''
-                for k in range(0, prim_cells-1):
+                ##loop over all cells, exluding DLL wraparound (cell 127->0)
+                for k in range(prim_cells-1):
                     
-                    '''subtract mean from cell profile plots, each sample'''
+                    ##subtract mean from cell profile plots, each sample
                     v_samp    = float(d[k+(buf*prim_cells)]) - cell_profile_mean[k]
                     v_samp_p1 = float(d[k+(buf*prim_cells)+1])- cell_profile_mean[k+1]
                         
-                    '''rising edge condition'''
+                    ##rising edge condition
                     if (v_samp <= 0.) and (v_samp_p1 > 0.):
                         zero_cross[k+1] = zero_cross[k+1] + 1.                       
                         
-                        interp_time = t_nom[k] + abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
+                        interp_time = t_nom[k+1] - abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
 
                         if last_rising > -1:
-                            if last_rising > k+1 or last_rising == 0:
+                            if last_rising > k+1: # or last_rising == 0:
                                 period_cells[l][k+1].append( interp_time - time_last_rising + (prim_cells + 1) * nominal_dt)
                             else:
                                 period_cells[l][k+1].append( interp_time - time_last_rising )
@@ -96,51 +100,57 @@ def zeroCrossings(data, lab, return_cell_profile=False):
                         last_rising = k+1
                         time_last_rising = interp_time
 
-                    '''falling edge condition'''
+                    ##falling edge condition
                     if (v_samp >= 0.) and (v_samp_p1 < 0.):
                         zero_cross[k+1] = zero_cross[k+1] + 1.
 
-                        interp_time = t_nom[k] + abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
+                        interp_time = t_nom[k+1] - abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
 
                         if last_falling > -1:
-                            if last_falling > k+1 or last_falling == 0:
+                            if last_falling > k+1: # or last_falling == 0:
                                 period_cells[l][k+1].append( interp_time - time_last_falling + (prim_cells + 1) * nominal_dt)
+                            #    if k+1 == 12:
+                            #        print 'last falling', last_falling, 't last fall', time_last_falling, 't_nom last', t_nom[last_falling-1], \
+                            #            't interp now', interp_time, 't nom', t_nom[k], 'period',  interp_time - time_last_falling + (prim_cells + 1) * nominal_dt
+
                             else:
                                 period_cells[l][k+1].append( interp_time - time_last_falling )
-                                
+                            #    if k+1 == 50:
+                            #        print 'last falling', last_falling, 't last fall', time_last_falling, 't_nom last', t_nom[last_falling-1], \
+                            #            't interp now', interp_time, 't nom', t_nom[k], 'period', interp_time - time_last_falling 
 
                         last_falling = k+1
                         time_last_falling = interp_time
 
-                '''handle wraparound (cell 127->0) separately here'''
+                ## handle wraparound (cell 127->0) separately here
                 if  (buf < 7):
                     
                     num_entries_wrap = num_entries_wrap + 1
 
                     v_samp    = float(d[prim_cells-1+(buf*prim_cells)]) - cell_profile_mean[prim_cells-1]
                     v_samp_p1 = float(d[prim_cells+(buf*prim_cells)]) - cell_profile_mean[0]
-
-                    '''rising edge condition for DLL seam'''
+                    
+                    ## rising edge condition for DLL seam
                     if  (v_samp <= 0.) and (v_samp_p1 > 0.):
                         zero_cross[0] = zero_cross[0] + 1.
                         
-                        interp_time = t_nom[prim_cells-1] + abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
+                        interp_time = t_nom[0] - abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
 
-                        ''' time in the DLL seam is defined as: (primary_cells-1)*nominal_dt -> 0.0 '''
+                        ## time in the DLL seam is defined as: (primary_cells-1)*nominal_dt -> 0.0 
                         if last_rising > -1:
-                            period_cells[l][0].append( interp_time - time_last_rising )
-                            
+                            period_cells[l][0].append( interp_time - time_last_rising + (prim_cells + 1) * nominal_dt )
+        
                         last_rising = 0
                         time_last_rising = interp_time
 
-                    '''falling edge condition for DLL seam'''
+                    ## falling edge condition for DLL seam
                     if  (v_samp >= 0.) and (v_samp_p1 < 0.):
                         zero_cross[0] = zero_cross[0] + 1.
 
-                        interp_time = t_nom[prim_cells-1] + abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
+                        interp_time = t_nom[0] - abs(nominal_dt * v_samp_p1/(v_samp_p1-v_samp))
 
                         if last_falling > -1:
-                            period_cells[l][0].append( interp_time - time_last_falling )
+                            period_cells[l][0].append( interp_time - time_last_falling + (prim_cells + 1) * nominal_dt )
                             
                         last_falling = 0
                         time_last_falling = interp_time
@@ -152,15 +162,14 @@ def zeroCrossings(data, lab, return_cell_profile=False):
         
     return zero_crossings_all, period_cells
 
-
 if __name__=='__main__':
 
     import matplotlib.pyplot as plt
 
-    lab = 0
+    lab = 5
 
-    d = np.loadtxt('test210MHz.dat')
-    #d = np.loadtxt('test210MHz_1000events.dat')
+    #d = np.loadtxt('test210MHz.dat')
+    d = np.loadtxt('test210MHz_1000events.dat')
     new_data=np.zeros((len(d)/1024, 12, 1024))
     
     for i in range(0, len(d), 1024):
@@ -183,6 +192,15 @@ if __name__=='__main__':
     period_mean=np.zeros(prim_cells, dtype=float)
     for i in range(prim_cells):
         period_mean[i] = np.mean(period[lab][i])
+
+
+    plt.figure()
+    #plt.hist(period[lab][0], alpha=0.5)
+    plt.hist(period[lab][1], alpha=0.5, bins=np.arange(4.2, 5.4, 0.01))
+    plt.hist(period[lab][30], alpha=0.5, bins=np.arange(4.2, 5.4, 0.01))
+    plt.hist(period[lab][50], alpha=0.5, bins=np.arange(4.2, 5.4, 0.01))
+    plt.hist(period[lab][100], alpha=0.5, bins=np.arange(4.2, 5.4, 0.01))
+    #plt.hist(period[lab][120], alpha=0.5, bins=np.arange(4.0, 5.4, 0.01))
 
     plt.figure()
     plt.plot(period_mean, 'o-')

@@ -21,6 +21,7 @@ lab4d_window_mask = 0x2000
 lab4d_adc_bits = 12 #bits
 lab4d_sampling_rate = 3.200 #gigasamples-per-second
 lab4d_nominal_dt = 1./lab4d_sampling_rate #nanoseconds
+lab4d_nominal_dt_ps = lab4d_nominal_dt*1.e3 #picoseconds
 lab4d_primary_sample_cells = 128 #samples
 lab4d_storage_cells = 4096 #samles
 
@@ -64,4 +65,5 @@ lab4d_default['phase_fe']    = 75
 lab4d_default['sspin_le']    = 100
 lab4d_default['sspin_fe']    = 6
 
+#print lab4d_default
 

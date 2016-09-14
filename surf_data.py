@@ -59,7 +59,8 @@ class SurfData:
         for i in range(numevent):
             _data = self.dev.log_lab(lab, samples=EVENT_BUFFER, force_trig=force_trig)
 
-            end_of_buf_flag=-1
+            end_of_buf_flag=-1  # wraparound location flag
+
             for k in range(surf_channels):
                 #end_of_buf_flag=-1  ##should be the same for all channels
                 datbuf = (_data[k][0] & lab4d_buffer_mask) >> 14 ##check the LAB4D buffer only on the 0th sample 
@@ -123,7 +124,7 @@ class SurfData:
 
         '''the above process should probably be numpy-fied to run faster'''
         #ped_data = np.transpose(np.sum(np.bitwise_and(np.array(data).reshape((numruns/4, 12, 4096)), 0x0FFF), axis=0))
-        ped_data /= (numruns / 4)
+        ped_data /= ( (numruns - 4) / 4)
         
         if save:
             np.savetxt(calibration_dir + filename, ped_data)
@@ -322,6 +323,7 @@ if __name__ == '__main__':
                    2 : ['scope',    'plot some data in real-time like a scope'],
                    3 : ['lin',      'do a DC pedestal scan'],
                    }
+
     import matplotlib.pyplot as plt
     import sys
 
@@ -362,7 +364,7 @@ if __name__ == '__main__':
     elif sys.argv[1] == run_options[2][0]:
         
         refresh = 0.1
-        fig=plt.figure()
+        fig=plt.figure(figsize=(14,7))
 
         if len(sys.argv) == 3:
             lab = [int(sys.argv[2])]
