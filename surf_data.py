@@ -25,12 +25,13 @@ class SurfData:
     def __init__(self):
         self.dev=surf.Surf()
         self.pedestals=np.zeros(((lab4d_storage_cells, surf_channels)), dtype=np.int)
+        self.lab_lut = np.zeros((2**LAB_ADC_BITS, 12), dtype=float)
 
     ################################################################   
     # set some configurations for data taking
     def start(self, startup_wait=0.05):
         self.pedestals=np.zeros((EVENT_BUFFER*4, 12), dtype=np.int)
-        self.lab_lut = np.zeros((2**LAB_ADC_BITS, 12), dtype=float)
+        #self.lab_lut = np.zeros((2**LAB_ADC_BITS, 12), dtype=float)
         self.dev.labc.run_mode(0)
         self.dev.labc.reset_fifo()
         self.dev.labc.testpattern_mode(0)

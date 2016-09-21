@@ -17,7 +17,7 @@ import trim_minimization_curve as trim_min
 from utils.surf_constants import *
 
 #sort-of arbitrary limit for trim-dac (anecdotal evidence suggests VCDL fails slightly above this trim-dac value)
-max_trim   = 2540
+max_trim   = 2500
 
 #####################################################
 ## set trim dac values in a number of ways (scaler, default initial values, or send an list of 128 elements)
@@ -25,7 +25,7 @@ max_trim   = 2540
 def setTrimDacs(dev, lab, fbtrim=None, sstoutfb=lab4d_default['sstoutfb'], dt_trims=None, write=True):
 
     dev.dev.labc.dll(lab, mode=True, sstoutfb=sstoutfb)
-    time.sleep(2)
+    time.sleep(1)
 
     if fbtrim != None:
         dev.dev.labc.l4reg(lab, 11, int(fbtrim))   
@@ -37,11 +37,13 @@ def setTrimDacs(dev, lab, fbtrim=None, sstoutfb=lab4d_default['sstoutfb'], dt_tr
         '''if non initial values specified, go with some initial even/odd guesses'''
         for i in range(lab4d_primary_sample_cells):
             if i%2==0:
-                trims[i] = 1750 #2310 
+                trims[i] = 2050 #1955 #2310 
             else:
-                trims[i] = 1350
-        trims[127]= 300 #last sample always seems to be a little slow, perhaps due to less loading
-        trims[0]  = 1950   #don't touch trim dac0, set fast as possible [7/2016] or maybe not [9/2016]
+                trims[i] = 1600 #1510
+        trims[127]= 800   #last sample always seems to be a little slow, perhaps due to more capacitive loading
+        trims[0]  = 2120 #2060   #don't touch trim dac0, set fast as possible [7/2016] SCRATCH THAT: actually needs tuned [9/2016]
+
+        ##vtrim fb ONLY sets the total amount of delay in the chain. Does not have a handle on the delay in the wraparound sample
 
     else:
         if isinstance(dt_trims, list):
@@ -156,7 +158,7 @@ def scanFeedbackPeriodogram(dev, lab, sine_freq, scan_range):
     return fbscan
 
 #####################################################
-def scanFeedbackFit(dev, lab, current_dac_value, sine_freq, sine_amp=100.):
+def scanFeedbackFit(dev, lab, sine_freq, scan_range=None, current_dac_value=1300, sine_amp=100.):
             
     freq_fit_init = 2*np.pi*sine_freq
     
@@ -203,12 +205,12 @@ def scanFeedbackFit(dev, lab, current_dac_value, sine_freq, sine_amp=100.):
 
         if len(fit_freq) < 2:
             print 'something went wrong here..'
-        
+
         else:
             fbscan[lab]['freq'].append(np.mean(np.array(fit_freq)))
             print 'difference: input freq - fitted freq = (kHz)', (sine_freq - np.mean(np.array(fit_freq)))*1.e-3, \
                 'trim', int(fbscan[lab]['trim'][current_iter])
-            current_iter = current_iter + 1
+        current_iter = current_iter + 1
 
     return fbscan
 
@@ -253,13 +255,14 @@ if __name__=='__main__':
     
     import surf_data
     import json
+    import time
 
     dev=surf_data.SurfData()
     
-    freq=210.000e6
+    freq=235.000e6
     print 'using sine wave frequency', freq*1e-6, 'MHz'
 
-    num_iter  = 20
+    num_iter  = 50
     num_events= 8000
 
     lab=0
@@ -272,7 +275,7 @@ if __name__=='__main__':
 
     fbscan_dict = []
       
-    basefilename = '210MHz_tune_run_0914_CH0_noFeedback_v3_fixPeriods'
+    basefilename = '235MHz_tune_run_0916_CH0_v3'
     
     flat_trims = setTrimDacs(dev, lab, fbtrim=1320, dt_trims=lab4d_default['dt_trim'])
     trims.append(flat_trims)
@@ -300,6 +303,8 @@ if __name__=='__main__':
     ## run scan
     _rms=100.
     i=0
+    
+    t0 = time.time()
 
     while (i < (num_iter+1)):
 
@@ -317,6 +322,7 @@ if __name__=='__main__':
         savedatfile = basefilename + '_data_iter%d.dat' % i
 
         crossings, periods = singleRun(dev, lab, num_events=num_events, save=False, filename=savedatfile)
+
         mean_crossings = np.mean(crossings[lab], dtype=np.float64) 
         avg_sample_dt = mean_crossings * 1.e12 / freq 
         dt_crossings.append( crossings[lab] * 1.e12 / freq)
@@ -330,11 +336,11 @@ if __name__=='__main__':
         dt_period.append(_period_mean)
         dt_period_std.append(_period_std)
 
-        _rms=np.std(dt_crossings[i])
+        _rms=np.std(dt_crossings[i+1])
 
         print '---------------------------------'
         print 'on iteration..', i, '-- dT RMS [ps]:' , _rms, \
-            '-- avg dT [ps]', avg_sample_dt, '-- DLL wrap dT [ps]', dt_crossings[i][0]
+            '-- avg dT [ps]', avg_sample_dt, '-- DLL wrap dT [ps]', dt_crossings[i+1][0], ' -- time since start [min]',  (time.time() - t0)/60.
         print '---------------------------------'
         i = i+1
 

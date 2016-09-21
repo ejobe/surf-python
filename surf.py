@@ -24,6 +24,7 @@ import serial.surf_i2c as surf_i2c
 import serial.spi as spi
 import pb.picoblaze as picoblaze
 import calibrations.surf_calibrations as surf_calibrations
+import timing.tune_dll_trim as tune_dll_trim
 
 class LAB4Controller:
         map = { 'CONTROL'		    : 0x00000,
@@ -95,7 +96,7 @@ class LAB4Controller:
 	#scan to find vadjp
 	# NOTE: current version is *NOT* usable with updated timing parameters
 	# (probably need to adjust target value)
-	'''
+	
         def autotune_vadjp(self, lab, initial=2700):
                 self.set_tmon(lab, self.tmon['SSPin'])
                 rising=self.scan_edge(lab, 1, 0)
@@ -135,7 +136,7 @@ class LAB4Controller:
                         trial=falling-rising
                         print "LAB4D# %d Trial: vadjp %d width %f target %f" % ( lab, vadjp, trial, width)
                 return vadjp
-	'''
+	
         #############################################################
 	#scan to find vadjn
 	# NOTE: current version is *NOT* usable with updated timing parameters
@@ -361,6 +362,24 @@ class LAB4Controller:
 		while not user[31]:
                         user = bf(self.read(self.map['L4REG']))
 
+        #############################################################
+        # write trim dacs. trim_values=scaler or list of 128 values
+        # write a single lab (lab = 0 or 1 or 2 ... etc
+	def write_timebase_trims(self, lab, trim_values):
+		self.run_mode(0)
+		if type(trim_values) == list:
+			print 'writing list'
+			for i in range(lab4d_primary_sample_cells):       #PCLK-1=<256:383> : dTrim DACS
+				#print lab, i+256, trim_values[i]
+				self.l4reg(lab, i+256, int(trim_values[i]), verbose=True)
+
+		elif type(trim_values) == int:
+			for i in range(lab4d_primary_sample_cells):       #PCLK-1=<256:383> : dTrim DACS
+				self.l4reg(lab, i+256, trim_values, verbose=True)
+
+		else:
+			print 'incorrect data type. No registers were written'
+			
         def default(self, lab4=15):
                 #DAC default values
                 self.l4reg(lab4, lab4d_register['vboot'], lab4d_default['vboot'])   #PCLK-1=0 : Vboot 
@@ -398,21 +417,18 @@ class LAB4Controller:
                 self.l4reg(lab4, 9, lab4d_default['qbias'])    #PCLK-1=9 : Qbias 
                 self.l4reg(lab4, 10, lab4d_default['isel'])    #PCLK-1=10 : ISEL
 
-                calFbs = surf_calibrations.read_vtrimfb(self.dev.dna())
-                if calFbs == None:
-                        print "Using default Vtrimfb"
-                        self.l4reg(lab4, 11, lab4d_default['vtrim_fb'])
-                else:
-                        print "Using cal file for Vtrimfb's"
-                        if lab4 == 15:
-                                for i in xrange(12):
-                                        self.l4reg(i,11,calFbs[i])
-                        else:
-                                self.l4reg(lab4, 11, calFbs[lab4])
+		## set vtrim feedback
+		calFbs = tune_dll_trim.load(self.dev.dna())					    
+		if lab4 == 15:
+			for i in xrange(12):
+				self.l4reg(i,11,calFbs[i])
+		else:
+			self.l4reg(lab4, 11, calFbs[lab4])
+
                                         
                 self.l4reg(lab4, 16, 0)        #patrick said to add 6/9
 
-                for i in range (0, 128):       #PCLK-1=<256:384> : dTrim DACS
+                for i in range (128):       #PCLK-1=<256:384> : dTrim DACS
                         #self.l4reg(lab4, i+256, 0)
                         self.l4reg(lab4, i+256, lab4d_default['dt_trim'])
 

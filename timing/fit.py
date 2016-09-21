@@ -20,8 +20,6 @@ def fit_sin( data, amp, freq, phase, dt=nominal_sampling_dt,
     popt, pfit = curve_fit(my_sin, x, data, p0=[amp, freq, phase])
                            #sigma=(np.zeros(len(x))+0.1))
 
-    #smooth_x=np.linspace(0,len(data), len(data)*10)
-
     if plot:
         print popt
         plt.plot(x, data, 'o')
@@ -30,3 +28,21 @@ def fit_sin( data, amp, freq, phase, dt=nominal_sampling_dt,
 
     return popt
                  
+def my_gaus(x, norm, mu, sig):
+    return norm * np.exp( -0.5 * np.power(x-mu,2) / ( sig**2 ))
+
+def fit_gaus( bins, data, amp=1, mu=0, sig=1, plot=False):
+    
+    popt, pfit = curve_fit(my_gaus, bins, data, p0=[amp, mu, sig])
+
+    if plot:
+        print popt
+        plt.figure()
+        plt.plot(bins, data, 'o', color='black')
+        #plt.plot(bins, data, '-', drawstyle='steps', color='black')
+        plt.plot(bins, my_gaus(bins, *popt), '--', color='red')
+        #fine_bins = np.arange(bins[0], bins[-1], (bins[1]-bins[0])/10)
+        #plt.plot(fine_bins, my_gaus(fine_bins, *popt), '--', color='red')
+        plt.show()
+        
+    return popt #constant, mean, sigma
