@@ -12,10 +12,11 @@ basefilename='235MHz_tune_run_0919TEST'
 cfiles=['dt_crossings'+basefilename+'.json']
 tfiles=['trimdacs_'+basefilename+'.json']
 pfiles=['mean_periods'+basefilename+'.json', 'w']
+psigfiles=['std_periods'+basefilename+'.json', 'w']
 
 freq = 235.00e6
 
-lab_to_plot=1
+lab_to_plot=4
 
 #leg=['run0','run1', 'run2']
 
@@ -33,12 +34,15 @@ if __name__=="__main__":
     with open(pfiles[0],'r') as infile:
         mean_periods = json.load(infile)
     #mean_periods = np.loadtxt(pfiles[f])
-    
+    with open(psigfiles[0],'r') as infile:
+        std_periods = json.load(infile)
+
     if(1):
 
         crossings = np.array(crossings[str(lab_to_plot)])
         mean_periods = np.array(mean_periods[str(lab_to_plot)])
         trims = np.array(trims[str(lab_to_plot)])
+        std_periods = np.array(std_periods[str(lab_to_plot)])
 
         rms=[]
         mean_mean_periods=[]
@@ -111,11 +115,43 @@ if __name__=="__main__":
         plt.legend(loc='lower left', numpoints=1)
         plt.xlim([-2,130])
         
-        plt.figure(12)
-        cell=127
+        plt.figure(12, figsize=(12,8))
         for cell in range(128):
-            plt.plot(trims[1:,cell],crossings[1:,cell],'-', lw=2, alpha=0.5)
-            
+            if cell==0:
+                plt.plot(trims[0,cell],crossings[0,cell],'+',   markersize=9, lw=3, color='black', label='initial guess')
+                plt.plot(trims[last,cell],crossings[last,cell], 'o', ms=4, alpha=0.9, color='black', label='last iteration')
+                
+                plt.plot(trims[0::len(trims)+last,cell],crossings[0::len(trims)+last,cell], '-',  lw=1, color='black', alpha=0.7, label='sample 0-1')
+            elif cell==127:
+                plt.plot(trims[0,cell],crossings[0,cell],'+',   markersize=9, color='green')
+                plt.plot(trims[last,cell],crossings[last,cell],'o',  alpha=0.7, ms=4,color='green')
+                plt.plot(trims[0::len(trims)+last,cell],crossings[0::len(trims)+last,cell],'-', lw=1, alpha=0.7, color='green', label='sample 127-0')
+                    #print trims[:,cell]
+                    #print trims[1::len(trims)+last-1, cell], trims[last, cell]
+                    #print crossings[:,cell]
+                    #print crossings[1::len(trims)+last-1, cell], crossings[last, cell]
+
+            elif cell%2==0:
+                plt.plot(trims[0,cell],crossings[0,cell],'+',   alpha=0.4,markersize=7, color='blue')
+                plt.plot(trims[last,cell],crossings[last,cell],'o',  ms=4, alpha=0.5, color='blue')
+                if cell == 126:
+                    plt.plot(trims[0::len(trims)+last,cell],crossings[0::len(trims)+last,cell],'-',  lw=1, alpha=0.25, label='even sample pairs', color='blue')
+                else:
+                    plt.plot(trims[0::len(trims)+last,cell],crossings[0::len(trims)+last,cell],'-',  lw=1, alpha=0.25, color='blue')
+
+            else:
+                plt.plot(trims[0,cell],crossings[0,cell],'+',   alpha=0.4,markersize=7,  color='red')
+                plt.plot(trims[last,cell],crossings[last,cell],'o',  ms=4, alpha=0.5, color='red')
+                if cell == 125:
+                    plt.plot(trims[0::len(trims)+last,cell],crossings[0::len(trims)+last,cell],'-',  lw=1, alpha=0.25, label='odd sample pairs', color='red')
+                else:
+                    plt.plot(trims[0::len(trims)+last,cell],crossings[0::len(trims)+last,cell],'-',  lw=1, alpha=0.25, color='red')
+
+
+        plt.ylim([200, 380])
+        plt.xlim([0, 2600])
+        plt.legend(loc='lower left', numpoints=1)
+            #plt.grid()
         plt.xlabel('Trim DAC value', size=16)
         plt.ylabel('Sample dt [ps]', size=16)
         #####################################################################
@@ -147,6 +183,10 @@ if __name__=="__main__":
         plt.grid()
         plt.legend(numpoints=1)
         '''
+
+        plt.figure(21)
+        plt.plot(std_periods[first,:])
+        plt.plot(std_periods[last,:])
 
     timesum=np.cumsum(crossings[:,0:], axis=1)
 
