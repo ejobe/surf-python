@@ -1,4 +1,4 @@
-
+tes
 import surf
 import sys
 import calibrations.surf_calibrations as surf_cal
@@ -12,6 +12,7 @@ def do(board):
     dev.identify()
     print 'path:', dev.path
     dev.labc.run_mode(0)
+    dev.labc.testpattern_mode(0)
     dev.labc.reset_fifo()
     dev.labc.reset_ramp()
     dev.labc.dll(15)
@@ -38,21 +39,24 @@ def do(board):
 #
 #        surf_cal.save_vadjn(dev.dna(), vadjn)
 #    
-#    dev.labc.default()
-#
-#    if surf_cal.read_vadjp(dev.dna()) == None:
-#        print 'scanning for Vadjp..'
-#        vadjp = []
-#        for i in range(12):
-#            vadjp.append(dev.labc.autotune_vadjp(i))
-#
-#        surf_cal.save_vadjp(dev.dna(), vadjp)  
-#    
+    dev.labc.default()
+    #turn on the DLL
+    dev.labc.dll(15, mode=True)
+
+
+    if surf_cal.read_vadjp(dev.dna()) == None:
+        print 'scanning for Vadjp..'
+        vadjp = []
+        for i in range(12):
+            vadjp.append(dev.labc.autotune_vadjp(i))
+
+        surf_cal.save_vadjp(dev.dna(), vadjp)  
+    
     #re-initialize the lab4d register loading
     dev.labc.default()
-    '''
-
-    dev.labc.dll(15, mode=True)
+    ##turn on the DLL
+    #dev.labc.dll(15, mode=True)
+    #show the board status
     dev.status()
 
     return dev
