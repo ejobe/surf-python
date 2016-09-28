@@ -1,7 +1,7 @@
-tes
 import surf
 import sys
 import calibrations.surf_calibrations as surf_cal
+import time
 
 #sys.path.insert(0, '/home/anita/astroparticlelab/')
 
@@ -15,12 +15,13 @@ def do(board):
     dev.labc.testpattern_mode(0)
     dev.labc.reset_fifo()
     dev.labc.reset_ramp()
-    dev.labc.dll(15)
-    
+    dev.labc.dll(15) #disable DLL
+    time.sleep(1)
+
     dev.i2c.default_config()
     dev.clock(dev.internalClock)
     
-    dev.labc.default()
+    dev.labc.default() #send default values to LAB registers
     dev.set_phase(2)
     dev.labc.automatch_phab(15)
 
@@ -39,10 +40,6 @@ def do(board):
 #
 #        surf_cal.save_vadjn(dev.dna(), vadjn)
 #    
-    dev.labc.default()
-    #turn on the DLL
-    dev.labc.dll(15, mode=True)
-
 
     if surf_cal.read_vadjp(dev.dna()) == None:
         print 'scanning for Vadjp..'
@@ -52,11 +49,10 @@ def do(board):
 
         surf_cal.save_vadjp(dev.dna(), vadjp)  
     
-    #re-initialize the lab4d register loading
-    dev.labc.default()
     ##turn on the DLL
-    #dev.labc.dll(15, mode=True)
-    #show the board status
+    time.sleep(1)
+    dev.labc.dll(15, mode=True)
+    ##show the board status
     dev.status()
 
     return dev

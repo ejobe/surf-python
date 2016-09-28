@@ -75,8 +75,8 @@ lab4d_default['qbias']   = 1000
 lab4d_default['isel']    = 2580  # ~10 us ramp  
 lab4d_default['dt_trim'] = 1750 
 lab4d_default['vtrim_fb']= 1350 
-lab4d_default['vadjp']   = 2700
-lab4d_default['vadjn']   = 1671
+lab4d_default['vadjp']   = 2680
+lab4d_default['vadjn']   = 1721
 
 lab4d_default['testpattern'] = 0xBA6
 

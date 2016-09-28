@@ -36,9 +36,8 @@ def save(fbdict, dna):
 
 def load(dna):
     fbtrims=[]
-    try:
-        a=sc.read_cal(dna, 'vtrimfb')
-    except KeyError:
+    a=sc.read_cal(dna, 'vtrimfb')
+    if a == None:
         print 'setting default values'
 
         for i in range(12):

@@ -326,18 +326,13 @@ class LAB4Controller:
                         
 			#turn off internal Vadjn buffer bias
                         self.l4reg(lab4, 2, 0)      #PCLK-1=2 : VanN
-                        
-                        calFbs = surf_calibrations.read_vtrimfb(self.dev.dna())
-                        if calFbs == None:
-                                print "Using default Vtrimfb"
-                                self.l4reg(lab4, 11, lab4d_default['vtrim_fb'])
-                        else:
-                                print "Using cal file for Vtrimfb's"
-                                if lab4 == 15:
-                                        for i in xrange(12):
-                                                self.l4reg(i,11,calFbs[i])
-                                else:
-                                        self.l4reg(lab4, 11, calFbs[lab4]) 
+			
+			calFbs = tune_dll_trim.load(self.dev.dna())					    
+			if lab4 == 15:
+				for i in xrange(12):
+					self.l4reg(i,11,calFbs[i])
+			else:
+				self.l4reg(lab4, 11, calFbs[lab4])
 
                 else:
                         #turn on internal Vadjn buffer bias

@@ -166,10 +166,10 @@ def read_cal(dna=None, key=None, lab=None):
             for board_key in board_cal:
                 if key == None:
                     print board_key
-                    i+1
+                    i=i+1
                 elif key == board_key:
                     if lab == None:
-                        i+1
+                        i=i+1
                         return board_cal[key]
                     else:
                         a=board_cal[key]
